@@ -29,10 +29,12 @@ pipeline {
 
        stage ('Docker Build') {
          // Build and push image with Jenkins' docker-plugin
-         scripts {
+         steps {
                 withDockerRegistry([credentialsId: "dockerhub", url: "https://index.docker.io/v1/"]) {
-                    def image = docker.build("yusuf/mock-test", ".")
-                    image.push()
+                    step {
+                        def image = docker.build("yusuf/mock-test", ".")
+                        image.push()
+                    }
                 }
             }
         }
