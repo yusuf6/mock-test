@@ -31,8 +31,10 @@ pipeline {
          // Build and push image with Jenkins' docker-plugin
          steps {
                 withDockerRegistry([credentialsId: "dockerhub", url: "https://index.docker.io/v1/"]) {
-                image = docker.build("yusuf/mock-test", ".")
-                image.push()
+                step {
+                    image = docker.build("yusuf/mock-test", ".")
+                    image.push()
+                    }
                 }
             }
         }
