@@ -29,18 +29,20 @@ pipeline {
 
        stage ('Docker Build') {
          // Build and push image with Jenkins' docker-plugin
-            withDockerRegistry([credentialsId: "dockerhub", url: "https://index.docker.io/v1/"]) {
-            image = docker.build("yusuf/mock-test", ".")
-            image.push()
+         steps {
+                withDockerRegistry([credentialsId: "dockerhub", url: "https://index.docker.io/v1/"]) {
+                image = docker.build("yusuf/mock-test", ".")
+                image.push()
+                }
             }
         }
 
-      stage ('K8S Deploy') {
-        kubernetesDeploy(
-            configs: 'deployments/prod-lb.yaml',
-            kubeconfigId: 'K8S',
-            enableConfigSubstitution: true
-            )
-        }
+//       stage ('K8S Deploy') {
+//         kubernetesDeploy(
+//             configs: 'deployments/prod-lb.yaml',
+//             kubeconfigId: 'K8S',
+//             enableConfigSubstitution: true
+//             )
+//         }
     }
 }
