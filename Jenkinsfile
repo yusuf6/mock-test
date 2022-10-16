@@ -3,13 +3,43 @@ pipeline {
     tools{
         maven 'Maven'
     }
+    
     stages {
-        stage("Build Maven") {
+        stage("Checkout SCM") {
             steps {
-                checkout scm
-                sh 'mvn clean install'
+            checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'githubcredential', url: 'https://github.com/yusuf6/mock-test.git']]])    
             }
         }
+        stage("Build Maven") {
+            steps {
+                bat 'mvn -v'
+                bat 'mvn clean install'
+            }
+        }
+
+       stage ('Docker Build') {
+         steps {
+             script {
+                withDockerRegistry([credentialsId: "dockerhub", url: ""]) {
+                        def image = docker.build("yuf4u/mock-test", ".")
+                        image.push()
+                    }
+                }
+            }
+        }
+
+    stage ('K8S Deploy') {
+        steps {
+            script {
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'K8S', namespace: '', serverUrl: '') {
+                    bat 'kubectl apply -f deployments/prod-lb.yaml'
+                    }
+                }
+            }
+        }
+    }
+}
+
 //         stage("Build Docker Image") {
 //             steps {
 //                 sh 'docker build -t mock-test .'
@@ -26,25 +56,3 @@ pipeline {
 //                 sh 'docker push mock-test'
 //             }
 //         }
-
-       stage ('Docker Build') {
-         // Build and push image with Jenkins' docker-plugin
-         steps {
-             script {
-                withDockerRegistry([credentialsId: "dockerhub", url: "https://index.docker.io/v1/"]) {
-                        def image = docker.build("yusuf/mock-test", ".")
-                        image.push()
-                    }
-                }
-            }
-        }
-
-//       stage ('K8S Deploy') {
-//         kubernetesDeploy(
-//             configs: 'deployments/prod-lb.yaml',
-//             kubeconfigId: 'K8S',
-//             enableConfigSubstitution: true
-//             )
-//         }
-    }
-}
